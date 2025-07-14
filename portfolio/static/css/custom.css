@@ -1,0 +1,161 @@
+/* Custom styles beyond Tailwind */
+
+/* Transitions */
+.transition-transform {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+/* Hover animations */
+.hover-rise {
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+}
+
+.hover-rise:hover {
+    transform: translateY(-8px);
+}
+
+/* Skill bars animation */
+.skill-bar .progress-bar {
+    width: 0;
+    transition: width 1s ease-in-out;
+}
+
+/* Project card hover effects */
+.project-card {
+    transition: all 0.3s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode transitions */
+.dark-mode-transition {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #666;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+/* Custom focus states */
+.custom-focus:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #14b8a6;
+    ring-offset: 2px;
+}
+
+/* Loading animation for forms */
+.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    border: 2px solid #14b8a6;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: loading 0.6s linear infinite;
+}
+
+@keyframes loading {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Custom container padding for better mobile experience */
+@media (max-width: 640px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Hero section gradient background */
+.hero-gradient {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.dark .hero-gradient {
+    background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+}
+
+/* Custom typography styles */
+.heading-underline {
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.heading-underline::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: #14b8a6;
+    border-radius: 3px;
+}
+
+/* Experience timeline */
+.timeline-line {
+    position: relative;
+}
+
+.timeline-line::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 24px;
+    bottom: 0;
+    width: 2px;
+    background-color: #14b8a6;
+    opacity: 0.3;
+}
+
+@media (min-width: 768px) {
+    .timeline-line::before {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}

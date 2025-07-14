@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satyajeet Suryawanshi - Python Backend Developer</title>
+    <meta name="description" content="Python Backend Developer with expertise in FastAPI, RESTful APIs, and Kubernetes">
+    <meta name="keywords" content="Python, Backend Developer, FastAPI, API Development, Kubernetes">
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#0f172a',  // Dark blue
+                            light: '#1e293b'
+                        },
+                        accent: {
+                            DEFAULT: '#14b8a6',  // Teal
+                            light: '#2dd4bf'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- HTMX for dynamic interactions -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-white dark:bg-primary text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <!-- Dark mode toggle -->
+    <button id="theme-toggle" class="fixed top-4 right-4 p-2 rounded-lg bg-gray-200 dark:bg-primary-light">
+        <i class="fas fa-sun dark:hidden"></i>
+        <i class="fas fa-moon hidden dark:block"></i>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 bg-white dark:bg-primary shadow-lg z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <a href="#" class="text-xl font-bold">SS</a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#about" class="hover:text-accent">About</a>
+                    <a href="#skills" class="hover:text-accent">Skills</a>
+                    <a href="#projects" class="hover:text-accent">Projects</a>
+                    <a href="#experience" class="hover:text-accent">Experience</a>
+                    <a href="#contact" class="hover:text-accent">Contact</a>
+                </div>
+                <button class="md:hidden" id="mobile-menu-button">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#about" class="block px-3 py-2 hover:text-accent">About</a>
+                <a href="#skills" class="block px-3 py-2 hover:text-accent">Skills</a>
+                <a href="#projects" class="block px-3 py-2 hover:text-accent">Projects</a>
+                <a href="#experience" class="block px-3 py-2 hover:text-accent">Experience</a>
+                <a href="#contact" class="block px-3 py-2 hover:text-accent">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 pt-20">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-primary-light dark:bg-primary mt-20 py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <p>&copy; {% now "Y" %} Satyajeet Suryawanshi. All rights reserved.</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="https://github.com/satyajeet1400" target="_blank" class="hover:text-accent">
+                        <i class="fab fa-github text-2xl"></i>
+                    </a>
+                    <a href="{{ profile.linkedin_url }}" target="_blank" class="hover:text-accent">
+                        <i class="fab fa-linkedin text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Dark mode toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Set initial theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,202 @@
+{% extends "portfolio/base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="hero" class="min-h-screen flex items-center justify-center text-center">
+    <div>
+        <h1 class="text-5xl md:text-7xl font-bold mb-4">{{ profile.name }}</h1>
+        <p class="text-xl md:text-2xl text-accent mb-8">{{ profile.tagline }}</p>
+        <div class="flex justify-center space-x-4">
+            <a href="#contact" class="bg-accent hover:bg-accent-light text-white px-6 py-3 rounded-lg transition-colors">
+                Contact Me
+            </a>
+            <a href="{{ profile.resume_file.url }}" class="border-2 border-accent hover:bg-accent hover:text-white px-6 py-3 rounded-lg transition-colors">
+                Download Resume
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="py-20">
+    <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-8 text-center">About Me</h2>
+        <div class="prose dark:prose-invert max-w-none">
+            {{ profile.bio|linebreaks }}
+        </div>
+    </div>
+</section>
+
+<!-- Skills Section -->
+<section id="skills" class="py-20 bg-gray-50 dark:bg-primary-light">
+    <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold mb-12 text-center">Skills</h2>
+        
+        {% regroup skills by category as skill_categories %}
+        {% for category in skill_categories %}
+        <div class="mb-12">
+            <h3 class="text-2xl font-semibold mb-6">{{ category.grouper }}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for skill in category.list %}
+                <div class="bg-white dark:bg-primary p-4 rounded-lg shadow-lg">
+                    <div class="flex justify-between mb-2">
+                        <span class="font-medium">{{ skill.name }}</span>
+                        <span>{{ skill.proficiency }}%</span>
+                    </div>
+                    <div class="h-2 bg-gray-200 rounded">
+                        <div class="h-full bg-accent rounded" style="width: {{ skill.proficiency }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Projects Section -->
+<section id="projects" class="py-20">
+    <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold mb-12 text-center">Projects</h2>
+        
+        <div class="flex justify-center mb-8 space-x-4" x-data="{ activeCategory: 'all' }">
+            <button class="px-4 py-2 rounded-lg" 
+                    :class="activeCategory === 'all' ? 'bg-accent text-white' : 'bg-gray-200 dark:bg-primary-light'"
+                    @click="activeCategory = 'all'">
+                All
+            </button>
+            {% regroup projects by category as project_categories %}
+            {% for category in project_categories %}
+            <button class="px-4 py-2 rounded-lg"
+                    :class="activeCategory === '{{ category.grouper }}' ? 'bg-accent text-white' : 'bg-gray-200 dark:bg-primary-light'"
+                    @click="activeCategory = '{{ category.grouper }}'">
+                {{ category.grouper }}
+            </button>
+            {% endfor %}
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for project in projects %}
+            <div class="bg-white dark:bg-primary rounded-lg shadow-lg overflow-hidden transition-transform hover:-translate-y-2"
+                 x-show="activeCategory === 'all' || activeCategory === '{{ project.category }}'">
+                {% if project.image %}
+                <img src="{{ project.image.url }}" alt="{{ project.title }}" class="w-full h-48 object-cover">
+                {% endif %}
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2">{{ project.title }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ project.description }}</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for tech in project.technologies.all %}
+                        <span class="px-3 py-1 bg-accent bg-opacity-10 text-accent rounded-full text-sm">
+                            {{ tech.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    <div class="flex space-x-4">
+                        {% if project.github_url %}
+                        <a href="{{ project.github_url }}" target="_blank" class="text-accent hover:text-accent-light">
+                            <i class="fab fa-github text-xl"></i>
+                        </a>
+                        {% endif %}
+                        {% if project.live_url %}
+                        <a href="{{ project.live_url }}" target="_blank" class="text-accent hover:text-accent-light">
+                            <i class="fas fa-external-link-alt text-xl"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Experience Section -->
+<section id="experience" class="py-20 bg-gray-50 dark:bg-primary-light">
+    <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-12 text-center">Experience</h2>
+        
+        <div class="space-y-12">
+            {% for exp in experiences %}
+            <div class="relative pl-8 md:pl-0">
+                <div class="md:grid md:grid-cols-5 md:gap-8">
+                    <div class="md:col-span-2">
+                        <h3 class="text-xl font-bold">{{ exp.company }}</h3>
+                        <p class="text-accent">{{ exp.position }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ exp.start_date|date:"M Y" }} - 
+                            {% if exp.end_date %}
+                                {{ exp.end_date|date:"M Y" }}
+                            {% else %}
+                                Present
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="md:col-span-3 mt-4 md:mt-0">
+                        <div class="prose dark:prose-invert">
+                            {{ exp.description|linebreaks }}
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            {% for tech in exp.technologies.all %}
+                            <span class="px-3 py-1 bg-accent bg-opacity-10 text-accent rounded-full text-sm">
+                                {{ tech.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="py-20">
+    <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-12 text-center">Get in Touch</h2>
+        
+        <form hx-post="{% url 'contact-list' %}" hx-swap="outerHTML" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="name" class="block mb-2">Name</label>
+                    <input type="text" id="name" name="name" required
+                           class="w-full px-4 py-2 rounded-lg border dark:bg-primary-light dark:border-gray-700">
+                </div>
+                <div>
+                    <label for="email" class="block mb-2">Email</label>
+                    <input type="email" id="email" name="email" required
+                           class="w-full px-4 py-2 rounded-lg border dark:bg-primary-light dark:border-gray-700">
+                </div>
+            </div>
+            <div>
+                <label for="message" class="block mb-2">Message</label>
+                <textarea id="message" name="message" rows="6" required
+                          class="w-full px-4 py-2 rounded-lg border dark:bg-primary-light dark:border-gray-700"></textarea>
+            </div>
+            <div class="flex justify-center">
+                <button type="submit"
+                        class="bg-accent hover:bg-accent-light text-white px-8 py-3 rounded-lg transition-colors">
+                    Send Message
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+    // HTMX form submission handler
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'contact-form') {
+            if (evt.detail.xhr.status === 200) {
+                alert('Thank you for your message! I will get back to you soon.');
+                evt.detail.target.reset();
+            }
+        }
+    });
+</script>
+{% endblock %}
