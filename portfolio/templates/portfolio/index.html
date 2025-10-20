@@ -10,7 +10,7 @@
             <a href="#contact" class="bg-accent hover:bg-accent-light text-white px-6 py-3 rounded-lg transition-colors">
                 Contact Me
             </a>
-            <a href="{{ profile.resume_file.url }}" class="border-2 border-accent hover:bg-accent hover:text-white px-6 py-3 rounded-lg transition-colors">
+            <a href="{{ profile.resume_file}}" class="border-2 border-accent hover:bg-accent hover:text-white px-6 py-3 rounded-lg transition-colors">
                 Download Resume
             </a>
         </div>
@@ -156,7 +156,7 @@
     <div class="max-w-4xl mx-auto">
         <h2 class="text-3xl font-bold mb-12 text-center">Get in Touch</h2>
         
-        <form hx-post="{% url 'contact-list' %}" hx-swap="outerHTML" class="space-y-6">
+        <form id="contact-form" class="space-y-6">
             {% csrf_token %}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -189,14 +189,47 @@
 {% block extra_scripts %}
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
-    // HTMX form submission handler
-    document.body.addEventListener('htmx:afterSwap', function(evt) {
-        if (evt.detail.target.id === 'contact-form') {
-            if (evt.detail.xhr.status === 200) {
-                alert('Thank you for your message! I will get back to you soon.');
-                evt.detail.target.reset();
+    // Contact form submit handler (uses Fetch API to POST to DRF endpoint)
+    (function(){
+        const form = document.getElementById('contact-form');
+        if (!form) return;
+
+        form.addEventListener('submit', async function(e){
+            e.preventDefault();
+
+            const name = form.querySelector('#name').value;
+            const email = form.querySelector('#email').value;
+            const message = form.querySelector('#message').value;
+            const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+            const csrftoken = csrfInput ? csrfInput.value : '';
+
+            const payload = { name, email, message };
+
+            try{
+                const res = await fetch('/api/contact/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    credentials: 'same-origin'
+                });
+
+                if (res.ok) {
+                    alert('Thank you for your message! I will get back to you soon.');
+                    form.reset();
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    const msg = data.detail || (data.errors ? JSON.stringify(data.errors) : res.statusText);
+                    alert('Failed to send message: ' + msg);
+                }
+            } catch(err) {
+                console.error('Contact form submit error', err);
+                alert('An error occurred while sending your message. Please try again later.');
             }
-        }
-    });
+        });
+    })();
 </script>
 {% endblock %}

@@ -1,7 +1,10 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from django.core.mail import send_mail
 from django.conf import settings
+from .tasks import send_contact_email
+import logging
+
+logger = logging.getLogger('portfolio.views')
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -82,22 +85,38 @@ class ExperienceViewSet(viewsets.ReadOnlyModelViewSet):
 class ContactSubmissionViewSet(viewsets.ModelViewSet):
     queryset = ContactSubmission.objects.all()
     serializer_class = ContactSubmissionSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
+    # Allow unauthenticated users to submit the contact form
+    permission_classes = [permissions.AllowAny]
+    
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
-        # Send email notification
-        profile = Profile.objects.first()
-        if profile:
-            send_mail(
-                subject=f'New Contact Form Submission from {serializer.data["name"]}',
-                message=f'Name: {serializer.data["name"]}\nEmail: {serializer.data["email"]}\nMessage: {serializer.data["message"]}',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[profile.email],
-                fail_silently=False,
+        # Send email notification asynchronously via Celery
+        logger.info('ContactSubmission created: %s <%s>', serializer.data.get('name'), serializer.data.get('email'))
+        try:
+            send_contact_email.delay(
+                serializer.data['name'],
+                serializer.data['email'],
+                serializer.data['message'],
             )
-
+            logger.info('Enqueued send_contact_email task for %s', serializer.data.get('email'))
+        except Exception:
+            logger.exception('Failed to enqueue send_contact_email; falling back to synchronous send')
+            # fallback synchronous send
+            try:
+                from django.core.mail import send_mail
+                profile = Profile.objects.first()
+                recipient = profile.email if profile else settings.DEFAULT_FROM_EMAIL
+                send_mail(
+                    subject=f'New Contact Form Submission from {serializer.data["name"]}',
+                    message=f'Name: {serializer.data["name"]}\nEmail: {serializer.data["email"]}\nMessage: {serializer.data["message"]}',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[recipient],
+                    fail_silently=False,
+                )
+                logger.info('Synchronous contact email sent to %s', recipient)
+            except Exception:
+                logger.exception('Synchronous fallback send also failed')
         return Response(serializer.data)
