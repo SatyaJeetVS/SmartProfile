@@ -17,6 +17,16 @@
     </div>
 </section>
 
+<!-- GitHub Activity Section -->
+<section id="github" class="py-12 bg-gray-50 dark:bg-primary-light">
+    <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6 text-center">Recent GitHub Activity</h2>
+        <div id="github-activity" class="space-y-4">
+            <p class="text-center text-gray-600">Loading recent activity...</p>
+        </div>
+    </div>
+</section>
+
 <!-- About Section -->
 <section id="about" class="py-20">
     <div class="max-w-4xl mx-auto">
@@ -201,7 +211,11 @@
             const email = form.querySelector('#email').value;
             const message = form.querySelector('#message').value;
             const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
-            const csrftoken = csrfInput ? csrfInput.value : '';
+            let csrftoken = csrfInput ? csrfInput.value : '';
+            if (!csrftoken) {
+                const match = document.cookie.match(/(^|;)\s*csrftoken=([^;]+)/);
+                if (match) csrftoken = match.pop();
+            }
 
             const payload = { name, email, message };
 
@@ -230,6 +244,55 @@
                 alert('An error occurred while sending your message. Please try again later.');
             }
         });
+    })();
+</script>
+<script>
+    // Fetch and render GitHub activity from the API
+    (function(){
+        const container = document.getElementById('github-activity');
+        if (!container) return;
+
+        async function loadActivity(){
+            try{
+                const res = await fetch('/api/profile/github_activity/', { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) {
+                    container.innerHTML = '<p class="text-center text-red-500">Failed to load GitHub activity.</p>';
+                    return;
+                }
+                const data = await res.json();
+                if (!Array.isArray(data) || data.length === 0){
+                    container.innerHTML = '<p class="text-center text-gray-600">No recent public GitHub activity.</p>';
+                    return;
+                }
+
+                const list = document.createElement('div');
+                list.className = 'space-y-2';
+
+                data.slice(0,10).forEach(evt => {
+                    const repoName = evt.repo && evt.repo.name ? evt.repo.name : (evt.repository && evt.repository.full_name) || 'repository';
+                    const type = evt.type || evt.action || '';
+                    const created = evt.created_at ? new Date(evt.created_at).toLocaleString() : '';
+                    const li = document.createElement('div');
+                    li.className = 'bg-white dark:bg-primary p-4 rounded-lg shadow-sm flex justify-between items-start';
+                    const left = document.createElement('div');
+                    left.innerHTML = `<div class="font-medium">${type} <span class="text-sm text-gray-500">on <a class="text-accent hover:underline" href="https://github.com/${repoName}" target="_blank">${repoName}</a></span></div>`;
+                    const right = document.createElement('div');
+                    right.className = 'text-sm text-gray-500';
+                    right.textContent = created;
+                    li.appendChild(left);
+                    li.appendChild(right);
+                    list.appendChild(li);
+                });
+
+                container.innerHTML = '';
+                container.appendChild(list);
+            }catch(err){
+                console.error('Failed to load GitHub activity', err);
+                container.innerHTML = '<p class="text-center text-red-500">Error loading GitHub activity.</p>';
+            }
+        }
+
+        loadActivity();
     })();
 </script>
 {% endblock %}
