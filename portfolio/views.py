@@ -44,7 +44,7 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
         if not profile:
             return Response([])
         
-        url = f"https://api.github.com/repos/SatyaJeetVS/SmartProfile/commits"
+        url = f"https://api.github.com/users/SatyaJeetVS/events"
         response = requests.get(url)
         if response.status_code == 200:
             return Response(response.json()[:10])  # Return last 10 activities
